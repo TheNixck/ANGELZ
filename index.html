@@ -137,11 +137,10 @@ body::after {
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
   white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.22s ease;
 }
-.goal-ticker-row.is-leaving  { animation: ticker-leave 0.45s cubic-bezier(0.55, 0, 0.55, 1) forwards; }
-.goal-ticker-row.is-entering { animation: ticker-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-@keyframes ticker-leave { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-100%); } }
-@keyframes ticker-enter { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
+.goal-ticker-row.is-fading { opacity: 0; }
 .goal-ticker-status {
   display: inline-flex; justify-content: center;
   width: 18px;
@@ -835,31 +834,31 @@ body::after {
     if (cycleIdx >= items.length) cycleIdx = 0;
     const item = items[cycleIdx];
     cycleIdx = (cycleIdx + 1) % items.length;
-
-    const oldRow = tickerStage.querySelector('.goal-ticker-row');
-    const newRow = document.createElement('div');
-    newRow.className = 'goal-ticker-row';
-    const status = document.createElement('span');
-    status.className = 'goal-ticker-status';
-    status.setAttribute('data-status', item.status);
-    status.textContent = statusGlyph(item.status);
-    const text = document.createElement('span');
-    text.className = 'goal-ticker-text';
-    text.textContent = item.text;
-    newRow.appendChild(status);
-    newRow.appendChild(text);
-
-    if (oldRow && !firstTick) {
-      oldRow.classList.add('is-leaving');
-      setTimeout(() => oldRow.remove(), 460);
-      newRow.classList.add('is-entering');
-    } else if (oldRow) {
-      oldRow.remove();
-    }
-    tickerStage.appendChild(newRow);
-    firstTick = false;
-
     tickerMeta.textContent = done + '/' + total;
+
+    let row = tickerStage.querySelector('.goal-ticker-row');
+    if (!row) {
+      row = document.createElement('div');
+      row.className = 'goal-ticker-row';
+      row.innerHTML =
+        '<span class="goal-ticker-status"></span>' +
+        '<span class="goal-ticker-text"></span>';
+      tickerStage.appendChild(row);
+    }
+
+    const statusEl = row.querySelector('.goal-ticker-status');
+    const textEl   = row.querySelector('.goal-ticker-text');
+
+    const apply = () => {
+      statusEl.setAttribute('data-status', item.status);
+      statusEl.textContent = statusGlyph(item.status);
+      textEl.textContent = item.text;
+      row.classList.remove('is-fading');
+    };
+
+    if (firstTick) { apply(); firstTick = false; return; }
+    row.classList.add('is-fading');
+    setTimeout(apply, 220);
   }
 
   function startTicker() {

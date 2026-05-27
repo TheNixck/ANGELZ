@@ -331,8 +331,28 @@ body.topbar-modal-open { overflow: hidden; touch-action: none; }
     sync();
   }
 
+  function wireStandaloneNav() {
+    // iOS standalone mode: plain <a> clicks open Safari chrome. Intercept and
+    // use window.location.href for same-origin links to stay fullscreen.
+    if (!window.navigator.standalone) return;
+    document.addEventListener('click', function (e) {
+      const a = e.target.closest('a[href]');
+      if (!a) return;
+      const href = a.getAttribute('href');
+      if (!href || href.charAt(0) === '#' || /^(javascript|mailto|tel):/.test(href)) return;
+      try {
+        const url = new URL(href, window.location.href);
+        if (url.origin === window.location.origin) {
+          e.preventDefault();
+          window.location.href = url.href;
+        }
+      } catch (_) {}
+    }, true);
+  }
+
   function boot() {
     injectStyleAndHTML();
+    wireStandaloneNav();
     const btn = document.getElementById('topbarWaterAdd');
     if (btn) btn.addEventListener('click', (e) => { e.preventDefault(); addWater(); });
     render();

@@ -1,0 +1,10 @@
+{
+  "name": "ANGELZ Dashboard",
+  "short_name": "ANGELZ",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#050506",
+  "theme_color": "#050506",
+  "orientation": "portrait-primary"
+}

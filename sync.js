@@ -17,7 +17,7 @@
     if (!SUPABASE_URL || !SUPABASE_KEY) return;
     if (SUPABASE_URL.indexOf('PASTE-') === 0 || SUPABASE_KEY.indexOf('PASTE-') === 0) return;
 
-    let supa = null, pushTimer = null, suppressSync = false, lastSyncedJson = null;
+    let supa = null, pushTimer = null, suppressSync = false, lastSyncedJson = null, lastPullAt = 0;
 
     function matches(k) {
       if (!k) return false;
@@ -105,6 +105,29 @@
         lastSyncedJson = json;
       } catch (e) {}
     }
+    async function pullNow() {
+      if (!supa) return;
+      const now = Date.now();
+      if (now - lastPullAt < 10000) return; // throttle: at most once per 10 s
+      lastPullAt = now;
+      try {
+        const { data, error } = await supa
+          .from('app_state').select('data').eq('key', appKey).maybeSingle();
+        if (!error && data && data.data) {
+          const incoming = JSON.stringify(data.data);
+          if (incoming !== lastSyncedJson) {
+            lastSyncedJson = incoming;
+            applyRemote(data.data);
+          }
+        }
+      } catch (e) {}
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') pullNow();
+    });
+    window.addEventListener('pageshow', (e) => { if (e.persisted) pullNow(); });
+    window.addEventListener('focus', pullNow);
+
     (async function init() {
       supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       try {
@@ -116,6 +139,7 @@
           schedulePush();
         }
       } catch (e) {}
+      lastPullAt = Date.now(); // initial fetch counts; skip re-fetch for the next 10 s
       supa.channel('app_state_' + appKey)
         .on('postgres_changes', {
           event: '*', schema: 'public', table: 'app_state', filter: 'key=eq.' + appKey,

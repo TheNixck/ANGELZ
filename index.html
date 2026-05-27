@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#050506">
 <title>ANGELZ Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="sync.js" defer></script>
 <script src="topbar.js" defer></script>
 <style>
 :root {
@@ -1305,6 +1307,19 @@ body::after {
     loadToday(); loadTomorrow(); renderStreak();
   });
 })();
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof initCloudSync !== 'function') return;
+  initCloudSync({
+    appKey: 'goals',
+    syncedPrefixes: ['goals:'],
+    onApplied: function () {
+      window.dispatchEvent(new CustomEvent('goals-changed'));
+      window.dispatchEvent(new Event('storage'));
+    }
+  });
+});
 </script>
 </body>
 </html>

@@ -18,6 +18,8 @@ Contact: rowan.wisere@gmail.com
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0a0a0b">
 <title>Water Coach</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="sync.js" defer></script>
 <script src="topbar.js" defer></script>
 
 <!-- =============================================================
@@ -1112,6 +1114,17 @@ html, body {
   margin-bottom: max(0px, env(safe-area-inset-bottom));
 }
 </style>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  try { if (window.self !== window.top) return; } catch (e) { return; }
+  if (typeof initCloudSync !== 'function') return;
+  initCloudSync({
+    appKey: 'health',
+    syncedKeys: ['po_water_v1'],
+    onApplied: function () { window.dispatchEvent(new Event('storage')); }
+  });
+});
+</script>
 
 </body>
 </html>

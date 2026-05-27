@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#050506">
 <meta name="color-scheme" content="dark">
 <title>Daily Stack — Customizable Template</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="sync.js" defer></script>
 <script src="topbar.js" defer></script>
 <style>
 :root {
@@ -1012,6 +1014,17 @@ main {
   render();
   startTicker();
 })();
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof initCloudSync !== 'function') return;
+  initCloudSync({
+    appKey: 'health',
+    syncedKeys: ['stack:items', 'stack:version', 'stack:low', 'po_water_v1'],
+    syncedPrefixes: ['stack:taken:'],
+    onApplied: function () { window.dispatchEvent(new Event('storage')); }
+  });
+});
 </script>
 
 </body>

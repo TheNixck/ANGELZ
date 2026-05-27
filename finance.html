@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#0a0a0b">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Finances</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="sync.js" defer></script>
 <script src="topbar.js" defer></script>
 <style>
 :root {
@@ -3374,6 +3376,17 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   setInterval(safeRenderTicker, 1500);
 
 })();
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof initCloudSync !== 'function') return;
+  initCloudSync({
+    appKey: 'finance',
+    syncedKeys: ['subs', 'wishlist', 'incoming_orders', 'nw_currency', 'nw:activity', 'nw:history'],
+    syncedPrefixes: ['nw:'],
+    onApplied: function () { window.dispatchEvent(new Event('storage')); }
+  });
+});
 </script>
 
 </body>

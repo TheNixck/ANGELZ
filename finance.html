@@ -1570,6 +1570,140 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 @media (max-width: 600px) {
   .sub-auto-toggle { width: 100%; justify-content: space-between; padding: 12px 14px; }
 }
+
+/* ============================================================
+   LIQUID ACCOUNTS — three fixed preset cards (Cash, Chase, Credit)
+   with inline +/− quick-action buttons. Mobile-first, thumb-friendly.
+   ============================================================ */
+.liq-card {
+  display: flex !important;
+  flex-direction: column;
+  gap: 0;
+  padding: 16px 18px !important;
+}
+.liq-card.liability {
+  background: linear-gradient(135deg, rgba(255,138,138,0.07), rgba(255,138,138,0.02)) !important;
+  border: 1px solid rgba(255,138,138,0.18) !important;
+}
+.liq-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.liq-icon { font-size: 18px; line-height: 1; flex-shrink: 0; }
+.liq-name {
+  flex: 1;
+  font-size: 10.5px; font-weight: 800;
+  letter-spacing: 0.13em; text-transform: uppercase;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+.liq-badge {
+  font-size: 9px; font-weight: 800;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 999px;
+  font-family: var(--font-mono);
+  background: rgba(107,227,164,0.12); color: #6BE3A4;
+  flex-shrink: 0;
+}
+.liq-badge.liab { background: rgba(255,138,138,0.12); color: #FF8A8A; }
+.liq-balance {
+  font-size: 30px; font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 16px;
+  font-family: var(--font-mono);
+}
+.liq-card.liability .liq-balance { color: #FF8A8A; }
+.liq-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.liq-btn {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 3px;
+  padding: 13px 8px;
+  border-radius: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  line-height: 1;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s, transform 0.10s;
+  border: 1px solid transparent;
+}
+.liq-btn:active { transform: scale(0.94); }
+.liq-btn-sym { font-size: 22px; font-weight: 700; }
+.liq-btn-txt {
+  font-size: 9.5px; font-weight: 800;
+  letter-spacing: 0.10em; text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+.liq-btn-add {
+  background: rgba(107,227,164,0.10);
+  color: #6BE3A4;
+  border-color: rgba(107,227,164,0.22);
+}
+.liq-btn-add:hover { background: rgba(107,227,164,0.18); }
+.liq-btn-sub {
+  background: rgba(255,138,138,0.08);
+  color: #FF8A8A;
+  border-color: rgba(255,138,138,0.18);
+}
+.liq-btn-sub:hover { background: rgba(255,138,138,0.16); }
+.liq-inline {
+  margin-top: 10px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 7px 10px;
+  background: rgba(0,0,0,0.28);
+  border-radius: 10px;
+  animation: liqFadeIn 0.14s ease;
+}
+.liq-inline[hidden] { display: none !important; }
+@keyframes liqFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.liq-input {
+  flex: 1; min-width: 0;
+  background: transparent; border: none; outline: none;
+  color: var(--text-primary);
+  font-size: 16px; font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  padding: 2px 4px;
+  -moz-appearance: textfield;
+}
+.liq-input::-webkit-outer-spin-button,
+.liq-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.liq-input::placeholder { color: var(--text-tertiary); }
+.liq-confirm, .liq-cancel {
+  padding: 7px 13px;
+  border-radius: 8px;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer; border: none; flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.10s;
+  min-width: 36px;
+}
+.liq-confirm:active, .liq-cancel:active { transform: scale(0.95); }
+.liq-confirm { background: rgba(107,227,164,0.22); color: #6BE3A4; }
+.liq-confirm.is-sub { background: rgba(255,138,138,0.20); color: #FF8A8A; }
+.liq-cancel { background: rgba(255,255,255,0.06); color: var(--text-tertiary); }
+.liq-op-label {
+  font-size: 9px; font-weight: 800;
+  letter-spacing: 0.13em; text-transform: uppercase;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+}
+.liq-op-label.add { color: #6BE3A4; }
+.liq-op-label.sub { color: #FF8A8A; }
 </style>
 </head>
 <body>
@@ -1597,14 +1731,14 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:14px">
       <div>
         <div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.04em;font-weight:500">Total net worth</div>
-        <div id="netWorthTotal" style="font-size:34px;font-weight:700;color:var(--text-primary);line-height:1.05;margin-top:2px">CHF 0</div>
+        <div id="netWorthTotal" style="font-size:34px;font-weight:700;color:var(--text-primary);line-height:1.05;margin-top:2px">USD 0</div>
         <div id="netWorthBreakdown" style="font-size:11px;color:var(--text-tertiary);margin-top:4px"></div>
       </div>
       <div style="display:flex;align-items:center;gap:6px">
         <span style="font-size:11px;color:var(--text-tertiary)">CHF</span>
         <select id="netWorthCurrency" style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;font-family:inherit;cursor:pointer">
-          <option value="CHF">CHF</option>
           <option value="USD">USD</option>
+          <option value="CHF">CHF</option>
           <option value="EUR">EUR</option>
           <option value="GBP">GBP</option>
         </select>
@@ -1686,14 +1820,79 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     </div>
 
     <div class="card-grid" style="gap:10px">
-      <!-- Bank accounts -->
-      <div class="card nw-subcard">
-        <div class="label" style="display:flex;justify-content:space-between;align-items:center"><span>🏦 Bank accounts</span><span id="bankTotal" style="font-size:13px;color:var(--text-primary);font-weight:600">0</span></div>
-        <div id="bankList" class="nw-list"></div>
-        <div class="quick-add">
-          <input type="text" placeholder="Account name" id="bankName" />
-          <input type="number" placeholder="Amount" id="bankAmount" step="0.01" />
-          <button class="quick-add-btn" id="bankAddBtn">+</button>
+      <!-- Current Cash -->
+      <div class="card nw-subcard liq-card" data-liq="cash">
+        <div class="liq-card-header">
+          <span class="liq-icon">💵</span>
+          <span class="liq-name">Current Cash</span>
+          <span class="liq-badge">ASSET</span>
+        </div>
+        <div class="liq-balance" id="liqBal_cash">USD 0</div>
+        <div class="liq-actions">
+          <button class="liq-btn liq-btn-add" data-liq="cash" data-op="add" type="button">
+            <span class="liq-btn-sym">+</span>
+            <span class="liq-btn-txt">Deposit</span>
+          </button>
+          <button class="liq-btn liq-btn-sub" data-liq="cash" data-op="sub" type="button">
+            <span class="liq-btn-sym">−</span>
+            <span class="liq-btn-txt">Spend</span>
+          </button>
+        </div>
+        <div class="liq-inline" id="liqInline_cash" hidden>
+          <span class="liq-op-label" id="liqOpLabel_cash">ADD</span>
+          <input type="number" step="0.01" placeholder="0.00" class="liq-input" id="liqInput_cash" inputmode="decimal" />
+          <button class="liq-confirm" id="liqConfirm_cash" type="button">✓</button>
+          <button class="liq-cancel" id="liqCancel_cash" type="button">✕</button>
+        </div>
+      </div>
+      <!-- Chase Debit -->
+      <div class="card nw-subcard liq-card" data-liq="chase">
+        <div class="liq-card-header">
+          <span class="liq-icon">🏦</span>
+          <span class="liq-name">Chase Debit</span>
+          <span class="liq-badge">ASSET</span>
+        </div>
+        <div class="liq-balance" id="liqBal_chase">USD 0</div>
+        <div class="liq-actions">
+          <button class="liq-btn liq-btn-add" data-liq="chase" data-op="add" type="button">
+            <span class="liq-btn-sym">+</span>
+            <span class="liq-btn-txt">Deposit</span>
+          </button>
+          <button class="liq-btn liq-btn-sub" data-liq="chase" data-op="sub" type="button">
+            <span class="liq-btn-sym">−</span>
+            <span class="liq-btn-txt">Spend</span>
+          </button>
+        </div>
+        <div class="liq-inline" id="liqInline_chase" hidden>
+          <span class="liq-op-label" id="liqOpLabel_chase">ADD</span>
+          <input type="number" step="0.01" placeholder="0.00" class="liq-input" id="liqInput_chase" inputmode="decimal" />
+          <button class="liq-confirm" id="liqConfirm_chase" type="button">✓</button>
+          <button class="liq-cancel" id="liqCancel_chase" type="button">✕</button>
+        </div>
+      </div>
+      <!-- Credit Card (liability) -->
+      <div class="card nw-subcard liq-card liability" data-liq="credit">
+        <div class="liq-card-header">
+          <span class="liq-icon">💳</span>
+          <span class="liq-name">Credit Card</span>
+          <span class="liq-badge liab">LIABILITY</span>
+        </div>
+        <div class="liq-balance" id="liqBal_credit">USD 0</div>
+        <div class="liq-actions">
+          <button class="liq-btn liq-btn-add" data-liq="credit" data-op="add" type="button">
+            <span class="liq-btn-sym">+</span>
+            <span class="liq-btn-txt">Pay Off</span>
+          </button>
+          <button class="liq-btn liq-btn-sub" data-liq="credit" data-op="sub" type="button">
+            <span class="liq-btn-sym">−</span>
+            <span class="liq-btn-txt">Charge</span>
+          </button>
+        </div>
+        <div class="liq-inline" id="liqInline_credit" hidden>
+          <span class="liq-op-label" id="liqOpLabel_credit">PAY</span>
+          <input type="number" step="0.01" placeholder="0.00" class="liq-input" id="liqInput_credit" inputmode="decimal" />
+          <button class="liq-confirm" id="liqConfirm_credit" type="button">✓</button>
+          <button class="liq-cancel" id="liqCancel_credit" type="button">✕</button>
         </div>
       </div>
       <!-- Stocks / Investments -->
@@ -1911,6 +2110,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   // and ORD_FROM_META hasn't been initialized yet.
   // ============================================================
   const ORD_FROM_META = {
+    cash:   { name: 'Cash',   color: '#4ADE80' },
+    chase:  { name: 'Chase',  color: '#38BDF8' },
+    credit: { name: 'Credit', color: '#FF8A8A' },
     bank:   { name: 'Bank',   color: '#7DD3FC' },
     stocks: { name: 'Stocks', color: '#6EE7B7' },
     crypto: { name: 'Crypto', color: '#FBBF24' },
@@ -1942,11 +2144,35 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   // ============================================================
   const CURRENCY_KEY = 'nw_currency';
   const NW_CATS = [
-    { key: 'bank',   listId: 'bankList',   totalId: 'bankTotal',   nameId: 'bankName',   amtId: 'bankAmount',   addId: 'bankAddBtn' },
     { key: 'stocks', listId: 'stocksList', totalId: 'stocksTotal', nameId: 'stocksName', amtId: 'stocksAmount', addId: 'stocksAddBtn' },
     { key: 'crypto', listId: 'cryptoList', totalId: 'cryptoTotal', nameId: 'cryptoName', amtId: 'cryptoAmount', addId: 'cryptoAddBtn' },
     { key: 'other',  listId: 'otherList',  totalId: 'otherTotal',  nameId: 'otherName',  amtId: 'otherAmount',  addId: 'otherAddBtn' }
   ];
+
+  // ============================================================
+  // LIQUID ACCOUNTS — three hardcoded preset cards (Cash, Chase,
+  // Credit Card). Each stored as a single CHF-base number under
+  // 'liq:{key}'. Credit is a liability: positive value = debt.
+  // Net worth = (cash + chase + stocks + crypto + other) - credit.
+  // ============================================================
+  const LIQ_ACCOUNTS = [
+    { key: 'cash',   label: 'Current Cash', icon: '💵', isLiability: false, color: '#4ADE80', addLabel: 'Deposit', subLabel: 'Spend' },
+    { key: 'chase',  label: 'Chase Debit',  icon: '🏦', isLiability: false, color: '#38BDF8', addLabel: 'Deposit', subLabel: 'Spend' },
+    { key: 'credit', label: 'Credit Card',  icon: '💳', isLiability: true,  color: '#FF8A8A', addLabel: 'Pay Off', subLabel: 'Charge' }
+  ];
+  function getLiqBal(key) {
+    const v = storeGet('liq:' + key);
+    return typeof v === 'number' ? v : 0;
+  }
+  function setLiqBal(key, val) {
+    storeSet('liq:' + key, val);
+  }
+  function renderLiqAccounts() {
+    LIQ_ACCOUNTS.forEach(function(acc) {
+      const el = document.getElementById('liqBal_' + acc.key);
+      if (el) el.textContent = fmtMoney(getLiqBal(acc.key));
+    });
+  }
   const currencyEl = document.getElementById('netWorthCurrency');
   const netWorthTotal = document.getElementById('netWorthTotal');
   const netWorthBreakdown = document.getElementById('netWorthBreakdown');
@@ -2083,6 +2309,20 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     let grand = 0;
     const breakdown = [];
     const sliceTotals = {};
+
+    // Liquid accounts (cash + chase as assets, credit as liability)
+    const liqCash   = getLiqBal('cash');
+    const liqChase  = getLiqBal('chase');
+    const liqCredit = getLiqBal('credit');
+    grand += liqCash + liqChase - liqCredit;
+    sliceTotals['cash']   = liqCash;
+    sliceTotals['chase']  = liqChase;
+    sliceTotals['credit'] = liqCredit;
+    if (liqCash   > 0) breakdown.push('Cash: '   + fmtMoney(liqCash));
+    if (liqChase  > 0) breakdown.push('Chase: '  + fmtMoney(liqChase));
+    if (liqCredit > 0) breakdown.push('Credit: −' + fmtMoney(liqCredit));
+    renderLiqAccounts();
+
     NW_CATS.forEach(cat => {
       const sub = renderNetWorthCategory(cat);
       grand += sub;
@@ -2164,11 +2404,14 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   // Each NW category gets a fixed color; subs get red because outflow.
   // ============================================================
   const NW_SLICE_META = {
+    cash:   { name: 'Cash',     color: '#4ADE80' },
+    chase:  { name: 'Chase',    color: '#38BDF8' },
+    credit: { name: 'Credit',   color: '#FF8A8A' },
     bank:   { name: 'Bank',     color: '#7DD3FC' },
     stocks: { name: 'Stocks',   color: '#6EE7B7' },
     crypto: { name: 'Crypto',   color: '#FBBF24' },
     other:  { name: 'Other',    color: '#B794F4' },
-    subs:   { name: 'Subs/yr',  color: '#FF8A8A' }
+    subs:   { name: 'Subs/yr',  color: '#FF6B6B' }
   };
   function donutArcPath(cx, cy, rOuter, rInner, startAngle, endAngle) {
     const x1o = cx + rOuter * Math.cos(startAngle);
@@ -2195,10 +2438,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     if (!svg || !total || !legend) return;
 
     // Build one slice per individual NW account, colored by parent category.
-    // So "star one" (bank) and "Revolute" (bank) become two blue slices,
-    // "vanguard" (stocks) a green slice, etc. — instead of one aggregate
-    // "Bank" / "Stocks" slice each.
+    // Liquid accounts (cash, chase, credit) get individual slices.
+    // NW_CATS (stocks, crypto, other) get one slice per named item.
     const slices = [];
+    // Liquid account slices
+    const lCash   = catTotals['cash']   || 0;
+    const lChase  = catTotals['chase']  || 0;
+    const lCredit = catTotals['credit'] || 0;
+    if (lCash   > 0) slices.push({ key: 'cash',   name: 'Current Cash', color: '#4ADE80', value: lCash });
+    if (lChase  > 0) slices.push({ key: 'chase',  name: 'Chase Debit',  color: '#38BDF8', value: lChase });
+    if (lCredit > 0) slices.push({ key: 'credit', name: 'Credit Card',  color: '#FF8A8A', value: lCredit });
     NW_CATS.forEach(cat => {
       const meta = NW_SLICE_META[cat.key] || { color: '#FFFFFF' };
       const items = storeGet('nw:' + cat.key) || [];
@@ -2411,14 +2660,84 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   });
 
   if (currencyEl) {
-    const savedCur = storeGet(CURRENCY_KEY);
-    if (savedCur) currencyEl.value = savedCur;
+    const savedCur = storeGet(CURRENCY_KEY) || 'USD';
+    currencyEl.value = savedCur;
     currencyEl.addEventListener('change', () => {
       storeSet(CURRENCY_KEY, currencyEl.value);
       renderAllNetWorth();
       renderSubs();
     });
   }
+
+  // ============================================================
+  // WIRE LIQUID ACCOUNT +/- BUTTONS
+  // ============================================================
+  LIQ_ACCOUNTS.forEach(function(acc) {
+    const addBtn    = document.querySelector('.liq-btn-add[data-liq="' + acc.key + '"]');
+    const subBtn    = document.querySelector('.liq-btn-sub[data-liq="' + acc.key + '"]');
+    const inline    = document.getElementById('liqInline_' + acc.key);
+    const input     = document.getElementById('liqInput_'  + acc.key);
+    const confirmBtn = document.getElementById('liqConfirm_' + acc.key);
+    const cancelBtn  = document.getElementById('liqCancel_'  + acc.key);
+    const opLabel   = document.getElementById('liqOpLabel_' + acc.key);
+    if (!addBtn || !subBtn || !inline || !input) return;
+
+    let currentOp = 'add';
+
+    function openInline(op) {
+      currentOp = op;
+      const isAdd = op === 'add';
+      if (opLabel) {
+        opLabel.textContent = acc.isLiability
+          ? (isAdd ? 'PAY OFF' : 'CHARGE')
+          : (isAdd ? 'ADD' : 'SUBTRACT');
+        opLabel.className = 'liq-op-label ' + (isAdd ? 'add' : 'sub');
+      }
+      if (confirmBtn) confirmBtn.className = 'liq-confirm' + (isAdd ? '' : ' is-sub');
+      inline.removeAttribute('hidden');
+      input.value = '';
+      setTimeout(function() { try { input.focus(); } catch(e) {} }, 50);
+    }
+
+    function closeInline() {
+      inline.setAttribute('hidden', '');
+      input.value = '';
+    }
+
+    function applyDelta() {
+      const v = parseFloat(input.value);
+      if (isNaN(v) || v <= 0) { closeInline(); return; }
+      const symbol = currencyEl ? currencyEl.value : 'USD';
+      const rate = exchangeRates[symbol] || 1;
+      const deltaCHF = v / rate;
+      let balCHF = getLiqBal(acc.key);
+      const isAdd = currentOp === 'add';
+      if (acc.isLiability) {
+        // + = Pay Off (reduce debt), − = Charge (increase debt)
+        balCHF = isAdd ? Math.max(0, balCHF - deltaCHF) : balCHF + deltaCHF;
+      } else {
+        // + = Deposit, − = Spend (floor at 0)
+        balCHF = isAdd ? balCHF + deltaCHF : Math.max(0, balCHF - deltaCHF);
+      }
+      setLiqBal(acc.key, balCHF);
+      logActivity(acc.key, acc.label,
+        isAdd ? (acc.isLiability ? -deltaCHF : deltaCHF)
+               : (acc.isLiability ?  deltaCHF : -deltaCHF),
+        'edit');
+      closeInline();
+      renderAllNetWorth();
+    }
+
+    addBtn.addEventListener('click', function() { openInline('add'); });
+    subBtn.addEventListener('click', function() { openInline('sub'); });
+    if (confirmBtn) confirmBtn.addEventListener('click', applyDelta);
+    if (cancelBtn)  cancelBtn.addEventListener('click', closeInline);
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter')  { e.preventDefault(); applyDelta(); }
+      if (e.key === 'Escape') closeInline();
+    });
+  });
+
   renderAllNetWorth();
 
   // ============================================================
@@ -2582,7 +2901,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     if (!sel) return;
     const prev = sel.value;
     const accounts = (typeof listAllNwAccounts === 'function') ? listAllNwAccounts() : [];
-    const ICONS = { bank: '🏦', stocks: '📈', crypto: '🪙', other: '💼' };
+    const ICONS = { cash: '💵', chase: '🏦', credit: '💳', bank: '🏦', stocks: '📈', crypto: '🪙', other: '💼' };
     if (!accounts.length) {
       sel.innerHTML = '<option value="">No accounts yet</option>';
       sel.disabled = true;
@@ -2660,7 +2979,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     ).join('');
     // Build From-account options from the live NW accounts
     const accounts = (typeof listAllNwAccounts === 'function') ? listAllNwAccounts() : [];
-    const ICONS = { bank: '🏦', stocks: '📈', crypto: '🪙', other: '💼' };
+    const ICONS = { cash: '💵', chase: '🏦', credit: '💳', bank: '🏦', stocks: '📈', crypto: '🪙', other: '💼' };
     const currentFrom = (it.fromCat && it.fromAccount) ? (it.fromCat + '::' + it.fromAccount) : '';
     const fromOpts = '<option value="">No account linked</option>' + accounts.map(a => {
       const v = a.catKey + '::' + a.itemName;
@@ -2778,7 +3097,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   // renderAllNetWorth which runs BEFORE this section's code (temporal dead
   // zone). All DOM lookups happen inside the function body instead.
   function nwGrandCHF() {
-    let g = 0;
+    let g = getLiqBal('cash') + getLiqBal('chase') - getLiqBal('credit');
     NW_CATS.forEach(cat => {
       const items = storeGet('nw:' + cat.key) || [];
       items.forEach(it => { g += Number(it.amount) || 0; });
@@ -2945,6 +3264,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   // the same source of truth.
   function listAllNwAccounts() {
     const out = [];
+    // Liquid preset accounts
+    LIQ_ACCOUNTS.forEach(function(acc) {
+      out.push({
+        catKey: acc.key,
+        itemIdx: 0,
+        itemName: acc.label,
+        amountCHF: getLiqBal(acc.key)
+      });
+    });
+    // Dynamic NW categories (stocks, crypto, other)
     NW_CATS.forEach(cat => {
       const items = storeGet('nw:' + cat.key) || [];
       items.forEach((it, idx) => {
@@ -2965,7 +3294,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     if (!sel) return;
     const accounts = listAllNwAccounts();
     const prev = sel.value;
-    const ICONS = { bank: '🏦', stocks: '📈', crypto: '🪙', other: '💼' };
+    const ICONS = { cash: '💵', chase: '🏦', credit: '💳', bank: '🏦', stocks: '📈', crypto: '🪙', other: '💼' };
     if (!accounts.length) {
       sel.innerHTML = '<option value="">No accounts yet</option>';
       sel.disabled = true;
@@ -3083,7 +3412,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
       alert('Add at least one net worth account before deducting.');
       return;
     }
-    const ICONS = { bank: '🏦', stocks: '📈', crypto: '🪙', other: '💼' };
+    const ICONS = { cash: '💵', chase: '🏦', credit: '💳', bank: '🏦', stocks: '📈', crypto: '🪙', other: '💼' };
     const cost = Number(order.amount) || 0;
     const optsHtml = accounts.map(a => {
       const insufficient = a.amountCHF < cost - 0.005;
@@ -3385,7 +3714,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initCloudSync({
     appKey: 'finance',
     syncedKeys: ['subs', 'wishlist', 'incoming_orders', 'nw_currency', 'nw:activity', 'nw:history'],
-    syncedPrefixes: ['nw:'],
+    syncedPrefixes: ['nw:', 'liq:'],
     onApplied: function () { window.dispatchEvent(new Event('storage')); }
   });
 });

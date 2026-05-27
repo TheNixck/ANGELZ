@@ -17,7 +17,8 @@
     if (!SUPABASE_URL || !SUPABASE_KEY) return;
     if (SUPABASE_URL.indexOf('PASTE-') === 0 || SUPABASE_KEY.indexOf('PASTE-') === 0) return;
 
-    let supa = null, pushTimer = null, suppressSync = false, lastSyncedJson = null, lastPullAt = 0;
+    let supa = null, channel = null;
+    let pushTimer = null, suppressSync = false, lastSyncedJson = null, lastPullAt = 0;
 
     function matches(k) {
       if (!k) return false;
@@ -105,6 +106,8 @@
         lastSyncedJson = json;
       } catch (e) {}
     }
+
+    // ---- HTTP fallback: re-fetch and apply remote state ----
     async function pullNow() {
       if (!supa) return;
       const now = Date.now();
@@ -122,12 +125,55 @@
         }
       } catch (e) {}
     }
+
+    // ---- Realtime WebSocket subscription ----
+    // Subscribes to postgres_changes on app_state for this appKey.
+    // Called once on init, and again on foreground if the channel died.
+    function subscribeRealtime() {
+      if (!supa) return;
+      // Tear down any existing channel before creating a new one
+      if (channel) {
+        try { supa.removeChannel(channel); } catch (_) {}
+        channel = null;
+      }
+      channel = supa
+        .channel('app_state_' + appKey)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'app_state', filter: 'key=eq.' + appKey },
+          (payload) => {
+            if (!payload.new || !payload.new.data) return;
+            const incoming = JSON.stringify(payload.new.data);
+            if (incoming === lastSyncedJson) return;
+            lastSyncedJson = incoming;
+            applyRemote(payload.new.data);
+          }
+        )
+        .subscribe();
+    }
+
+    // Re-establish the WebSocket when returning from background or bfcache.
+    // Channel states from Phoenix: 'joining' | 'joined' | 'leaving' | 'closed' | 'errored'
+    function ensureRealtime() {
+      if (!channel || channel.state === 'closed' || channel.state === 'errored') {
+        subscribeRealtime();
+      }
+    }
+
+    // ---- Foreground / navigation hooks ----
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') pullNow();
+      if (document.visibilityState === 'visible') {
+        pullNow();      // HTTP catch-up for anything missed while backgrounded
+        ensureRealtime(); // revive channel if iOS killed the WebSocket
+      }
     });
-    window.addEventListener('pageshow', (e) => { if (e.persisted) pullNow(); });
+    // pageshow fires on bfcache restore (persisted=true); DOMContentLoaded does not
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted) { pullNow(); ensureRealtime(); }
+    });
     window.addEventListener('focus', pullNow);
 
+    // ---- Boot ----
     (async function init() {
       supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       try {
@@ -140,20 +186,17 @@
         }
       } catch (e) {}
       lastPullAt = Date.now(); // initial fetch counts; skip re-fetch for the next 10 s
-      supa.channel('app_state_' + appKey)
-        .on('postgres_changes', {
-          event: '*', schema: 'public', table: 'app_state', filter: 'key=eq.' + appKey,
-        }, (payload) => {
-          if (!payload.new || !payload.new.data) return;
-          const incoming = JSON.stringify(payload.new.data);
-          if (incoming === lastSyncedJson) return;
-          lastSyncedJson = incoming;
-          applyRemote(payload.new.data);
-        })
-        .subscribe();
+      subscribeRealtime();    // open the WebSocket channel
     })();
+
     window.addEventListener('beforeunload', flushOnUnload);
-    window.addEventListener('pagehide', flushOnUnload);
+    window.addEventListener('pagehide', (e) => {
+      flushOnUnload();
+      // If the page is being truly unloaded (not entering bfcache), close the channel cleanly
+      if (!e.persisted && channel) {
+        try { supa.removeChannel(channel); channel = null; } catch (_) {}
+      }
+    });
     window.addEventListener('storage', (e) => { if (e.key && matches(e.key)) schedulePush(); });
   };
 })();

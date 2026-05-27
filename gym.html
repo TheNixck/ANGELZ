@@ -2989,6 +2989,21 @@ img, video, canvas, svg { max-width: 100%; }
       img.src = dataUrl;
     });
   }
+  async function uploadPhotoToStorage(dataUrl) {
+    if (!pcSupa) return null;
+    try {
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const filename = 'photo_' + Date.now() + '_' +
+        Math.random().toString(36).slice(2, 10) + '.jpg';
+      const { error } = await pcSupa.storage
+        .from('progress-photos')
+        .upload(filename, blob, { contentType: 'image/jpeg', upsert: false });
+      if (error) return null;
+      const { data } = pcSupa.storage.from('progress-photos').getPublicUrl(filename);
+      return data ? data.publicUrl : null;
+    } catch (e) { return null; }
+  }
   function photoFmtDate(key) {
     const d = wtParseKey(key);
     const mons = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -3005,7 +3020,7 @@ img, video, canvas, svg { max-width: 100%; }
     } else {
       grid.innerHTML = photos.map(p =>
         '<button class="wt-photo-card" data-id="' + p.id + '" type="button">' +
-          '<img src="' + p.dataUrl + '" alt="">' +
+          '<img src="' + (p.url || p.dataUrl) + '" alt="">' +
           '<div class="wt-photo-overlay"></div>' +
           '<div class="wt-photo-meta">' +
             '<span class="wt-photo-date">' + photoFmtDate(p.dateKey) + '</span>' +
@@ -3046,6 +3061,15 @@ img, video, canvas, svg { max-width: 100%; }
       }
     }
     photosRender();
+    uploadPhotoToStorage(entry.dataUrl).then((url) => {
+      if (!url) return;
+      const e = photos.find(p => p.id === id);
+      if (!e) return;
+      e.url = url;
+      delete e.dataUrl;
+      photosSave();
+      photosRender();
+    });
   }
   function fileToPhoto(file) {
     const r = new FileReader();
@@ -3130,7 +3154,7 @@ img, video, canvas, svg { max-width: 100%; }
     const p = photos.find(x => x.id === id);
     if (!p) return;
     activePhotoId = id;
-    $('wtViewerImg').src = p.dataUrl;
+    $('wtViewerImg').src = p.url || p.dataUrl;
     $('wtViewerDate').textContent = photoFmtDate(p.dateKey).toUpperCase();
     $('wtViewerWeight').textContent = p.weight || '—';
     $('wtViewer').dataset.mode = 'single';
@@ -3180,8 +3204,8 @@ img, video, canvas, svg { max-width: 100%; }
     if (!A || !B) return;
     activePhotoId = activeId;
     comparePhotoId = otherId;
-    $('wtCmpImgA').src = A.dataUrl;
-    $('wtCmpImgB').src = B.dataUrl;
+    $('wtCmpImgA').src = A.url || A.dataUrl;
+    $('wtCmpImgB').src = B.url || B.dataUrl;
     $('wtCmpMetaA').textContent = photoFmtDate(A.dateKey) + ' · ' + (A.weight || '—');
     $('wtCmpMetaB').textContent = photoFmtDate(B.dateKey) + ' · ' + (B.weight || '—');
     // Headline — date arrow + weight delta
@@ -3314,7 +3338,14 @@ img, video, canvas, svg { max-width: 100%; }
     for (const k of PC_SYNCED_KEYS) {
       const v = localStorage.getItem(k);
       if (v == null) continue;
-      try { out[k] = JSON.parse(v); } catch {}
+      let val;
+      try { val = JSON.parse(v); } catch { continue; }
+      if (k === 'po_coach_photos' && Array.isArray(val)) {
+        val = val
+          .filter((p) => p && p.url)
+          .map((p) => ({ id: p.id, url: p.url, dateKey: p.dateKey, weight: p.weight }));
+      }
+      out[k] = val;
     }
     return out;
   }
@@ -3349,6 +3380,19 @@ img, video, canvas, svg { max-width: 100%; }
     let changed = false;
     try {
       for (const k of PC_SYNCED_KEYS) {
+        if (k === 'po_coach_photos') {
+          let localPhotos = [];
+          try { localPhotos = JSON.parse(localStorage.getItem(k) || '[]'); } catch {}
+          const remotePhotos = Array.isArray(remote[k]) ? remote[k] : [];
+          const remoteIds = new Set(remotePhotos.map((p) => p && p.id));
+          const localOnly = localPhotos.filter((p) => p && !p.url && !remoteIds.has(p.id));
+          const merged = [...remotePhotos, ...localOnly];
+          const incoming = JSON.stringify(merged);
+          if (localStorage.getItem(k) !== incoming) {
+            try { _pcOrigSet(k, incoming); changed = true; } catch {}
+          }
+          continue;
+        }
         if (k in remote) {
           const incoming = JSON.stringify(remote[k]);
           const local = localStorage.getItem(k);

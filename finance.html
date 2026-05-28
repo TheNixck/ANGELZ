@@ -1629,8 +1629,22 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   line-height: 1;
   margin-bottom: 16px;
   font-family: var(--font-mono);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.12s;
 }
+.liq-balance:hover { opacity: 0.75; }
+.liq-balance:active { opacity: 0.5; }
 .liq-card.liability .liq-balance { color: #FF8A8A; }
+.nw-reset-hist-btn {
+  background: transparent; border: none;
+  color: var(--text-tertiary); font-size: 10px;
+  font-family: var(--font-mono); letter-spacing: 0.08em;
+  text-transform: uppercase; cursor: pointer; padding: 2px 6px;
+  border-radius: 4px; transition: color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.nw-reset-hist-btn:hover { color: #FF8A8A; background: rgba(255,138,138,0.10); }
 .liq-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1774,6 +1788,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         <div class="nw-chart-head">
           <span class="nw-chart-label">All-time</span>
           <span class="nw-chart-delta" id="nwChartDelta">—</span>
+          <button class="nw-reset-hist-btn" id="nwResetHistBtn" type="button" title="Clear graph history">Reset</button>
         </div>
         <svg class="nw-chart-svg" id="nwChartSvg" viewBox="0 0 600 200" preserveAspectRatio="none" aria-hidden="true">
           <defs>
@@ -2745,14 +2760,19 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
     function openInline(op) {
       currentOp = op;
-      const isAdd = op === 'add';
       if (opLabel) {
-        opLabel.textContent = acc.isLiability
-          ? (isAdd ? 'PAY OFF' : 'CHARGE')
-          : (isAdd ? 'ADD' : 'SUBTRACT');
-        opLabel.className = 'liq-op-label ' + (isAdd ? 'add' : 'sub');
+        if (op === 'set') {
+          opLabel.textContent = 'SET TO';
+          opLabel.className = 'liq-op-label add';
+        } else {
+          const isAdd = op === 'add';
+          opLabel.textContent = acc.isLiability
+            ? (isAdd ? 'PAY OFF' : 'CHARGE')
+            : (isAdd ? 'ADD' : 'SUBTRACT');
+          opLabel.className = 'liq-op-label ' + (isAdd ? 'add' : 'sub');
+        }
       }
-      if (confirmBtn) confirmBtn.className = 'liq-confirm' + (isAdd ? '' : ' is-sub');
+      if (confirmBtn) confirmBtn.className = 'liq-confirm' + (op === 'sub' ? ' is-sub' : '');
       inline.removeAttribute('hidden');
       input.value = '';
       if (descInput) descInput.value = '';
@@ -2767,28 +2787,40 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
     function applyDelta() {
       const v = parseFloat(input.value);
-      if (isNaN(v) || v <= 0) { closeInline(); return; }
+      if (isNaN(v) || v < 0) { closeInline(); return; }
       const symbol = currencyEl ? currencyEl.value : 'USD';
       const rate = exchangeRates[symbol] || 1;
-      const deltaCHF = v / rate;
-      let balCHF = getLiqBal(acc.key);
-      const isAdd = currentOp === 'add';
-      if (acc.isLiability) {
-        // + = Pay Off (reduce debt), − = Charge (increase debt)
-        balCHF = isAdd ? Math.max(0, balCHF - deltaCHF) : balCHF + deltaCHF;
-      } else {
-        // + = Deposit, − = Spend (floor at 0)
-        balCHF = isAdd ? balCHF + deltaCHF : Math.max(0, balCHF - deltaCHF);
-      }
-      setLiqBal(acc.key, balCHF);
       const desc = (descInput && descInput.value.trim()) || acc.label;
-      logActivity(acc.key, desc,
-        isAdd ? (acc.isLiability ? -deltaCHF : deltaCHF)
-               : (acc.isLiability ?  deltaCHF : -deltaCHF),
-        'edit');
+
+      if (currentOp === 'set') {
+        // Absolute balance set — user typed the new total directly
+        const newBalCHF = v / rate;
+        const oldBalCHF = getLiqBal(acc.key);
+        setLiqBal(acc.key, newBalCHF);
+        const deltaForLog = acc.isLiability ? (oldBalCHF - newBalCHF) : (newBalCHF - oldBalCHF);
+        logActivity(acc.key, desc, deltaForLog, 'edit');
+      } else {
+        if (v === 0) { closeInline(); return; }
+        const deltaCHF = v / rate;
+        let balCHF = getLiqBal(acc.key);
+        const isAdd = currentOp === 'add';
+        if (acc.isLiability) {
+          balCHF = isAdd ? Math.max(0, balCHF - deltaCHF) : balCHF + deltaCHF;
+        } else {
+          balCHF = isAdd ? balCHF + deltaCHF : Math.max(0, balCHF - deltaCHF);
+        }
+        setLiqBal(acc.key, balCHF);
+        logActivity(acc.key, desc,
+          isAdd ? (acc.isLiability ? -deltaCHF : deltaCHF)
+                 : (acc.isLiability ?  deltaCHF : -deltaCHF),
+          'edit');
+      }
       closeInline();
       renderAllNetWorth();
     }
+
+    const balEl = document.getElementById('liqBal_' + acc.key);
+    if (balEl) balEl.addEventListener('click', function() { openInline('set'); });
 
     addBtn.addEventListener('click', function() { openInline('add'); });
     subBtn.addEventListener('click', function() { openInline('sub'); });
@@ -2803,6 +2835,20 @@ input[type="date"]::-webkit-calendar-picker-indicator {
       if (e.key === 'Escape') closeInline();
     });
   });
+
+  // History reset button
+  (function() {
+    const btn = document.getElementById('nwResetHistBtn');
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+      if (!confirm('Reset all balances, activity log, and graph history to zero?')) return;
+      storeSet(NW_HISTORY_KEY, []);
+      storeSet(ACTIVITY_KEY, []);
+      LIQ_KEYS.forEach(function(k) { setLiqBal(k, 0); });
+      renderActivity();
+      renderAllNetWorth();
+    });
+  })();
 
   renderAllNetWorth();
 

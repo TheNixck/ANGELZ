@@ -643,7 +643,7 @@ html, body { scrollbar-width: none; -ms-overflow-style: none; }
 .nw-activity-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 2px; }
 .nw-activity-list::-webkit-scrollbar-track { background: transparent; }
 .nw-activity-row {
-  display: grid; grid-template-columns: 4px 1fr auto auto;
+  display: grid; grid-template-columns: 4px 1fr auto auto auto;
   gap: 10px; align-items: center;
   padding: 8px 12px;
   background: rgba(255,255,255,0.025);
@@ -652,6 +652,19 @@ html, body { scrollbar-width: none; -ms-overflow-style: none; }
   transition: background 0.15s;
 }
 .nw-activity-row:hover { background: rgba(255,255,255,0.05); }
+.nw-activity-del {
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: transparent; border: none;
+  color: var(--text-tertiary); font-size: 14px; line-height: 1;
+  cursor: pointer; flex-shrink: 0; opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.nw-activity-row:hover .nw-activity-del,
+.nw-activity-del:focus { opacity: 1; }
+.nw-activity-del:hover { background: rgba(255,138,138,0.18); color: #FF8A8A; }
+.nw-activity-del:active { transform: scale(0.9); }
 .nw-activity-bar {
   width: 4px; height: 24px; border-radius: 2px;
   flex-shrink: 0;
@@ -2378,6 +2391,24 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     const mons = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return mons[d.getMonth()] + ' ' + d.getDate();
   }
+  const LIQ_KEYS = ['cash', 'chase', 'credit'];
+
+  function deleteActivity(ts) {
+    const arr = storeGet(ACTIVITY_KEY) || [];
+    const idx = arr.findIndex(function(e) { return e.ts === ts; });
+    if (idx === -1) return;
+    const entry = arr[idx];
+    // Reverse the delta on liquid accounts so the balance goes back
+    if (LIQ_KEYS.indexOf(entry.cat) !== -1) {
+      const reversed = getLiqBal(entry.cat) - entry.delta;
+      setLiqBal(entry.cat, Math.max(0, reversed));
+    }
+    arr.splice(idx, 1);
+    storeSet(ACTIVITY_KEY, arr);
+    renderActivity();
+    renderAllNetWorth();
+  }
+
   function renderActivity() {
     const list = document.getElementById('nwActivityList');
     const empty = document.getElementById('nwActivityEmpty');
@@ -2399,7 +2430,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
       const cls = e.delta >= 0 ? 'up' : 'down';
       const amt = fmtMoney(Math.abs(e.delta));
       const kind = e.kind === 'edit' ? 'EDIT' : (e.kind === 'delete' ? 'DELETE' : 'ADD');
-      return '<div class="nw-activity-row" style="color:' + meta.color + '">'
+      return '<div class="nw-activity-row" data-ts="' + e.ts + '" style="color:' + meta.color + '">'
         + '<span class="nw-activity-bar" style="background:' + meta.color + '"></span>'
         + '<div class="nw-activity-info">'
         +   '<div class="nw-activity-name">' + escapeHtml(e.name || '(unnamed)') + '</div>'
@@ -2407,9 +2438,23 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         + '</div>'
         + '<span class="nw-activity-amt ' + cls + '">' + sign + amt + '</span>'
         + '<span class="nw-activity-date">' + fmtActivityDate(e.ts) + '</span>'
+        + '<button class="nw-activity-del" data-ts="' + e.ts + '" title="Undo & remove" type="button">×</button>'
         + '</div>';
     }).join('');
   }
+
+  // Delegated listener — survives innerHTML re-renders
+  (function() {
+    const list = document.getElementById('nwActivityList');
+    if (!list) return;
+    list.addEventListener('click', function(e) {
+      const btn = e.target.closest('.nw-activity-del');
+      if (!btn) return;
+      const ts = Number(btn.dataset.ts);
+      if (!ts) return;
+      deleteActivity(ts);
+    });
+  })();
 
   // ============================================================
   // ALLOCATION DONUT — pie chart of where money lives + annual subs

@@ -2420,6 +2420,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     }
     arr.splice(idx, 1);
     storeSet(ACTIVITY_KEY, arr);
+    // Remove history snapshots recorded at or after this entry — they captured the
+    // wrong value. renderAllNetWorth below will append a fresh correct snapshot.
+    const hist = storeGet('nw:history') || [];
+    storeSet('nw:history', hist.filter(function(h) { return h.t < entry.ts; }));
     renderActivity();
     renderAllNetWorth();
   }

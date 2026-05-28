@@ -1671,7 +1671,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   to   { opacity: 1; transform: translateY(0); }
 }
 .liq-input {
-  flex: 1; min-width: 0;
+  flex: 0 0 90px; min-width: 0;
   background: transparent; border: none; outline: none;
   color: var(--text-primary);
   font-size: 16px; font-family: var(--font-mono);
@@ -1682,6 +1682,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .liq-input::-webkit-outer-spin-button,
 .liq-input::-webkit-inner-spin-button { -webkit-appearance: none; }
 .liq-input::placeholder { color: var(--text-tertiary); }
+.liq-desc-input {
+  flex: 1; min-width: 0;
+  background: transparent; border: none; outline: none;
+  color: var(--text-secondary);
+  font-size: 13px; font-family: inherit;
+  padding: 2px 4px;
+  border-left: 1px solid rgba(255,255,255,0.08);
+  margin-left: 2px; padding-left: 8px;
+}
+.liq-desc-input::placeholder { color: var(--text-tertiary); font-style: italic; }
 .liq-confirm, .liq-cancel {
   padding: 7px 13px;
   border-radius: 8px;
@@ -1841,6 +1851,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         <div class="liq-inline" id="liqInline_cash" hidden>
           <span class="liq-op-label" id="liqOpLabel_cash">ADD</span>
           <input type="number" step="0.01" placeholder="0.00" class="liq-input" id="liqInput_cash" inputmode="decimal" />
+          <input type="text" placeholder="Description" class="liq-desc-input" id="liqDesc_cash" autocomplete="off" />
           <button class="liq-confirm" id="liqConfirm_cash" type="button">✓</button>
           <button class="liq-cancel" id="liqCancel_cash" type="button">✕</button>
         </div>
@@ -1866,6 +1877,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         <div class="liq-inline" id="liqInline_chase" hidden>
           <span class="liq-op-label" id="liqOpLabel_chase">ADD</span>
           <input type="number" step="0.01" placeholder="0.00" class="liq-input" id="liqInput_chase" inputmode="decimal" />
+          <input type="text" placeholder="Description" class="liq-desc-input" id="liqDesc_chase" autocomplete="off" />
           <button class="liq-confirm" id="liqConfirm_chase" type="button">✓</button>
           <button class="liq-cancel" id="liqCancel_chase" type="button">✕</button>
         </div>
@@ -1891,6 +1903,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         <div class="liq-inline" id="liqInline_credit" hidden>
           <span class="liq-op-label" id="liqOpLabel_credit">PAY</span>
           <input type="number" step="0.01" placeholder="0.00" class="liq-input" id="liqInput_credit" inputmode="decimal" />
+          <input type="text" placeholder="Description" class="liq-desc-input" id="liqDesc_credit" autocomplete="off" />
           <button class="liq-confirm" id="liqConfirm_credit" type="button">✓</button>
           <button class="liq-cancel" id="liqCancel_credit" type="button">✕</button>
         </div>
@@ -2677,6 +2690,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     const subBtn    = document.querySelector('.liq-btn-sub[data-liq="' + acc.key + '"]');
     const inline    = document.getElementById('liqInline_' + acc.key);
     const input     = document.getElementById('liqInput_'  + acc.key);
+    const descInput = document.getElementById('liqDesc_'   + acc.key);
     const confirmBtn = document.getElementById('liqConfirm_' + acc.key);
     const cancelBtn  = document.getElementById('liqCancel_'  + acc.key);
     const opLabel   = document.getElementById('liqOpLabel_' + acc.key);
@@ -2696,12 +2710,14 @@ input[type="date"]::-webkit-calendar-picker-indicator {
       if (confirmBtn) confirmBtn.className = 'liq-confirm' + (isAdd ? '' : ' is-sub');
       inline.removeAttribute('hidden');
       input.value = '';
+      if (descInput) descInput.value = '';
       setTimeout(function() { try { input.focus(); } catch(e) {} }, 50);
     }
 
     function closeInline() {
       inline.setAttribute('hidden', '');
       input.value = '';
+      if (descInput) descInput.value = '';
     }
 
     function applyDelta() {
@@ -2720,7 +2736,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         balCHF = isAdd ? balCHF + deltaCHF : Math.max(0, balCHF - deltaCHF);
       }
       setLiqBal(acc.key, balCHF);
-      logActivity(acc.key, acc.label,
+      const desc = (descInput && descInput.value.trim()) || acc.label;
+      logActivity(acc.key, desc,
         isAdd ? (acc.isLiability ? -deltaCHF : deltaCHF)
                : (acc.isLiability ?  deltaCHF : -deltaCHF),
         'edit');
@@ -2733,6 +2750,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     if (confirmBtn) confirmBtn.addEventListener('click', applyDelta);
     if (cancelBtn)  cancelBtn.addEventListener('click', closeInline);
     input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter')  { e.preventDefault(); applyDelta(); }
+      if (e.key === 'Escape') closeInline();
+    });
+    if (descInput) descInput.addEventListener('keydown', function(e) {
       if (e.key === 'Enter')  { e.preventDefault(); applyDelta(); }
       if (e.key === 'Escape') closeInline();
     });

@@ -358,6 +358,7 @@ main {
   gap: 6px;
   align-items: center;
 }
+.stack-add-row > * { min-width: 0; }
 .stack-input {
   font-size: 13px;
   padding: 9px 11px;
@@ -454,14 +455,30 @@ main {
 }
 
 @media (max-width: 600px) {
-  main { padding: 40px 16px 60px; }
+  main {
+    padding-top: max(40px, env(safe-area-inset-top));
+    padding-right: max(16px, env(safe-area-inset-right));
+    padding-bottom: max(60px, env(safe-area-inset-bottom));
+    padding-left: max(16px, env(safe-area-inset-left));
+  }
   .stack-card { padding: 18px 16px 14px; }
-  .stack-item { grid-template-columns: 28px 1fr auto; gap: 8px; }
-  .stack-item .stack-low-btn { grid-column: 2 / 4; margin-top: 4px; justify-self: start; }
+  .stack-item {
+    grid-template-columns: 28px 1fr auto;
+    gap: 8px;
+  }
+  .stack-item .stack-low-btn {
+    grid-column: 2 / 4;
+    margin-top: 4px;
+    justify-self: start;
+  }
   .stack-add-row { grid-template-columns: 1fr 1fr; }
   .stack-add-row .stack-add-btn { grid-column: 1 / -1; }
   .stack-add-row .stack-select { grid-column: 1 / -1; }
   .stack-search-results { width: 100%; }
+}
+
+@media (max-width: 400px) {
+  .stack-add-row { grid-template-columns: 1fr; }
 }
 
 ::selection { background: rgba(224, 118, 88, 0.3); color: var(--text-primary); }

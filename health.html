@@ -481,6 +481,168 @@ main {
   .stack-add-row { grid-template-columns: 1fr; }
 }
 
+/* ====== MACRO TRACKER ====== */
+.macro-section { margin-top: 56px; }
+
+.macro-head {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 12px;
+  margin-bottom: 12px;
+}
+.macro-settings-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-strong);
+  color: var(--text-tertiary); border-radius: 8px;
+  width: 32px; height: 32px; cursor: pointer;
+  font-size: 15px; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; flex-shrink: 0; font-family: inherit;
+}
+.macro-settings-btn:hover,
+.macro-settings-btn.is-open {
+  color: var(--text-primary); border-color: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.07);
+}
+.macro-goals-panel {
+  overflow: hidden; max-height: 0; opacity: 0;
+  transition: max-height 0.32s cubic-bezier(0.22,1,0.36,1), opacity 0.22s;
+  pointer-events: none;
+}
+.macro-goals-panel.open { max-height: 400px; opacity: 1; pointer-events: auto; }
+.macro-goals-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; padding-bottom: 12px;
+}
+.macro-goals-field { display: flex; flex-direction: column; gap: 4px; }
+.macro-goals-field label {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-tertiary);
+}
+.macro-goals-divider { height: 1px; background: var(--border-soft); margin: 12px 0 0; }
+
+.macro-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin: 14px 0;
+}
+.macro-stat {
+  background: var(--bg-secondary); border-radius: 12px;
+  padding: 14px 14px 12px; border: 1px solid transparent;
+  transition: border-color 0.2s, background 0.2s; position: relative;
+}
+.macro-stat.is-over {
+  border-color: rgba(239,68,68,0.35); background: rgba(239,68,68,0.04);
+}
+.macro-stat-label {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.macro-stat-num {
+  font-size: 26px; font-weight: 700; color: var(--text-primary);
+  font-variant-numeric: tabular-nums; letter-spacing: -0.02em; line-height: 1;
+}
+.macro-stat-unit { font-size: 11px; color: var(--text-tertiary); margin-left: 2px; }
+.macro-stat-goal-text {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text-quaternary); margin: 4px 0 10px;
+}
+.macro-stat-track {
+  height: 4px; background: rgba(255,255,255,0.06);
+  border-radius: 999px; overflow: hidden;
+}
+.macro-stat-fill {
+  height: 100%; width: 0%; border-radius: 999px;
+  transition: width 0.45s cubic-bezier(0.22,1,0.36,1), background-color 0.3s;
+}
+.macro-over-badge {
+  font-size: 8px; font-family: var(--font-mono); font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase; color: #FF6B6B;
+  background: rgba(239,68,68,0.10); border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 6px; padding: 2px 5px; white-space: nowrap;
+}
+
+.macro-bars {
+  margin-top: 4px; padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+}
+.macro-bars-head {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-tertiary); margin-bottom: 14px;
+}
+.macro-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.macro-bar-name {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase; width: 44px; flex-shrink: 0;
+}
+.macro-bar-track {
+  flex: 1; height: 10px; background: rgba(255,255,255,0.05);
+  border-radius: 999px; position: relative; overflow: hidden;
+}
+.macro-bar-fill {
+  position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; width: 0%;
+  transition: width 0.45s cubic-bezier(0.22,1,0.36,1), background-color 0.3s;
+}
+.macro-bar-val {
+  font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums; width: 68px; text-align: right; flex-shrink: 0;
+}
+
+.macro-log-section {
+  margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-soft);
+}
+.macro-log-inputs {
+  display: grid; grid-template-columns: 1fr 72px 72px 72px 60px;
+  gap: 6px; margin: 10px 0; align-items: center;
+}
+.macro-log-inputs > * { min-width: 0; }
+
+.macro-entries-section {
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-soft);
+}
+.macro-entry {
+  display: flex; align-items: center; gap: 8px; padding: 9px 10px;
+  border-radius: 8px; background: var(--bg-secondary); margin-bottom: 5px;
+  transition: background 0.15s;
+}
+.macro-entry:hover { background: rgba(255,255,255,0.05); }
+.macro-entry-label {
+  flex: 1; font-size: 13px; font-weight: 600; color: var(--text-primary);
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.macro-entry-macros { display: flex; gap: 10px; flex-shrink: 0; }
+.macro-entry-macro {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--text-quaternary); font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.macro-entry-macro b { color: var(--text-secondary); font-weight: 700; }
+.macro-entry-edit,
+.macro-entry-del {
+  background: transparent; border: 1px solid var(--border-strong);
+  color: var(--text-tertiary); cursor: pointer; font-size: 13px;
+  padding: 3px 8px; border-radius: 6px; opacity: 0.7;
+  transition: all 0.15s; line-height: 1; flex-shrink: 0;
+  font-family: inherit; display: flex; align-items: center; justify-content: center;
+}
+.macro-entry-edit:hover {
+  color: var(--text-primary); border-color: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.06); opacity: 1;
+}
+.macro-entry-del:hover {
+  color: #FF6B6B; border-color: rgba(239,68,68,0.45);
+  background: rgba(239,68,68,0.08); opacity: 1;
+}
+
+@media (max-width: 600px) {
+  .macro-section { margin-top: 40px; }
+  .macro-log-inputs { grid-template-columns: 1fr 1fr; }
+  .macro-log-inputs input:first-child { grid-column: 1 / -1; }
+  .macro-entry-macros { gap: 6px; }
+}
+@media (max-width: 380px) {
+  .macro-entry-macros { display: none; }
+}
+
 ::selection { background: rgba(224, 118, 88, 0.3); color: var(--text-primary); }
 ::-webkit-scrollbar { width: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -532,6 +694,69 @@ main {
       </div>
     </div>
   </div>
+
+  <section class="macro-section" id="macroSection">
+    <div class="section-title">Macros</div>
+    <div class="stack-card">
+
+      <div class="macro-head">
+        <div>
+          <div class="sf-eyebrow">Daily targets</div>
+          <div class="sf-title" style="font-size:20px;margin-bottom:0">Macro tracker</div>
+        </div>
+        <button class="macro-settings-btn" id="macroSettingsBtn" title="Edit goals">⚙</button>
+      </div>
+
+      <div class="macro-goals-panel" id="macroGoalsPanel">
+        <div class="sf-eyebrow" style="margin-bottom:8px">Edit daily goals</div>
+        <div class="macro-goals-grid">
+          <div class="macro-goals-field">
+            <label for="goalCalories">Calories (kcal)</label>
+            <input type="number" id="goalCalories" class="stack-input" min="0" step="50" />
+          </div>
+          <div class="macro-goals-field">
+            <label for="goalProtein">Protein (g)</label>
+            <input type="number" id="goalProtein" class="stack-input" min="0" step="5" />
+          </div>
+          <div class="macro-goals-field">
+            <label for="goalCarbs">Carbs (g)</label>
+            <input type="number" id="goalCarbs" class="stack-input" min="0" step="5" />
+          </div>
+          <div class="macro-goals-field">
+            <label for="goalFat">Fat (g)</label>
+            <input type="number" id="goalFat" class="stack-input" min="0" step="5" />
+          </div>
+        </div>
+        <button id="macroSaveGoalsBtn" class="stack-add-btn" style="width:100%">Save goals</button>
+        <div class="macro-goals-divider"></div>
+      </div>
+
+      <div class="macro-grid" id="macroGrid"></div>
+
+      <div class="macro-bars">
+        <div class="macro-bars-head">Progress vs goal</div>
+        <div id="macroBars"></div>
+      </div>
+
+      <div class="macro-log-section">
+        <div class="sf-eyebrow">Log a meal</div>
+        <div class="macro-log-inputs">
+          <input type="text"   id="macroLogLabel" class="stack-input" placeholder="Meal / food name" autocomplete="off" />
+          <input type="number" id="macroLogCal"   class="stack-input" placeholder="kcal"   min="0" />
+          <input type="number" id="macroLogPro"   class="stack-input" placeholder="Pro g"  min="0" />
+          <input type="number" id="macroLogCarb"  class="stack-input" placeholder="Carb g" min="0" />
+          <input type="number" id="macroLogFat"   class="stack-input" placeholder="Fat g"  min="0" />
+        </div>
+        <button id="macroLogBtn" class="stack-add-btn" style="width:100%">+ Log</button>
+      </div>
+
+      <div class="macro-entries-section" id="macroEntriesSection" style="display:none">
+        <div class="sf-eyebrow" style="margin-bottom:8px">Today's log</div>
+        <div id="macroEntriesList"></div>
+      </div>
+
+    </div>
+  </section>
 
   <section id="water" class="water-embed">
     <div class="section-title">Water Tracker</div>
@@ -1057,12 +1282,240 @@ main {
 })();
 </script>
 <script>
+(() => {
+  'use strict';
+
+  const mGet = (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+  const mSet = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+  function macroDate() {
+    const now = new Date();
+    if (now.getHours() < 6) now.setDate(now.getDate() - 1);
+    return now.toISOString().slice(0, 10);
+  }
+
+  const MACROS = [
+    { key: 'calories', label: 'Calories', unit: 'kcal', color: '#F5A84A', short: 'Cal',  tol: 100, def: 2000 },
+    { key: 'protein',  label: 'Protein',  unit: 'g',    color: '#4A9EFF', short: 'Pro',  tol: 10,  def: 150  },
+    { key: 'carbs',    label: 'Carbs',    unit: 'g',    color: '#A855F7', short: 'Carb', tol: 10,  def: 200  },
+    { key: 'fat',      label: 'Fat',      unit: 'g',    color: '#34D399', short: 'Fat',  tol: 10,  def: 65   },
+  ];
+
+  const GOALS_KEY = 'macro:goals';
+  const logKey = () => `macro:log:${macroDate()}`;
+
+  function getGoals() {
+    const g = mGet(GOALS_KEY) || {};
+    return {
+      calories: g.calories ?? 2000,
+      protein:  g.protein  ?? 150,
+      carbs:    g.carbs    ?? 200,
+      fat:      g.fat      ?? 65,
+    };
+  }
+  const setGoals = (g)   => mSet(GOALS_KEY, g);
+  const getLog   = ()    => mGet(logKey()) || [];
+  const setLog   = (arr) => mSet(logKey(), arr);
+
+  function getTotals(log) {
+    return log.reduce((acc, e) => ({
+      calories: acc.calories + (Number(e.calories) || 0),
+      protein:  acc.protein  + (Number(e.protein)  || 0),
+      carbs:    acc.carbs    + (Number(e.carbs)     || 0),
+      fat:      acc.fat      + (Number(e.fat)       || 0),
+    }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
+  }
+
+  function barColor(current, goal, tol, macroColor) {
+    if (current > goal + tol)       return '#FF6B6B';  // over → red
+    if (Math.abs(current - goal) <= tol) return '#1D9E75'; // at goal → green
+    return macroColor;                                  // under → macro color
+  }
+
+  function esc(str) {
+    return String(str).replace(/[&<>"']/g, c =>
+      ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  function renderMacros() {
+    const goals  = getGoals();
+    const log    = getLog();
+    const totals = getTotals(log);
+
+    // ── Stat cards ──────────────────────────────────────────
+    const grid = document.getElementById('macroGrid');
+    grid.innerHTML = '';
+    MACROS.forEach(m => {
+      const cur    = totals[m.key];
+      const goal   = goals[m.key];
+      const pct    = goal > 0 ? Math.min((cur / goal) * 100, 100) : 0;
+      const isOver = cur > goal + m.tol;
+      const color  = barColor(cur, goal, m.tol, m.color);
+      const excess = isOver ? `+${Math.round(cur - goal)}` : '';
+
+      const card = document.createElement('div');
+      card.className = 'macro-stat' + (isOver ? ' is-over' : '');
+      card.innerHTML = `
+        <div class="macro-stat-label" style="color:${m.color}">
+          ${esc(m.label)}
+          ${isOver ? `<span class="macro-over-badge">${esc(excess)}</span>` : ''}
+        </div>
+        <div style="display:flex;align-items:baseline;gap:2px;margin-bottom:3px">
+          <span class="macro-stat-num">${Math.round(cur)}</span>
+          <span class="macro-stat-unit">${m.unit}</span>
+        </div>
+        <div class="macro-stat-goal-text">/ ${goal} ${m.unit}</div>
+        <div class="macro-stat-track">
+          <div class="macro-stat-fill" style="width:${pct}%;background:${color}"></div>
+        </div>`;
+      grid.appendChild(card);
+    });
+
+    // ── Bar chart ────────────────────────────────────────────
+    const barsEl = document.getElementById('macroBars');
+    barsEl.innerHTML = '';
+    MACROS.forEach(m => {
+      const cur   = totals[m.key];
+      const goal  = goals[m.key];
+      const pct   = goal > 0 ? Math.min((cur / goal) * 100, 100) : 0;
+      const color = barColor(cur, goal, m.tol, m.color);
+      const row   = document.createElement('div');
+      row.className = 'macro-bar-row';
+      row.innerHTML = `
+        <div class="macro-bar-name" style="color:${m.color}">${esc(m.short)}</div>
+        <div class="macro-bar-track">
+          <div class="macro-bar-fill" style="width:${pct}%;background:${color}"></div>
+        </div>
+        <div class="macro-bar-val">${Math.round(cur)} / ${goal}</div>`;
+      barsEl.appendChild(row);
+    });
+
+    // ── Entries list ─────────────────────────────────────────
+    const section = document.getElementById('macroEntriesSection');
+    const list    = document.getElementById('macroEntriesList');
+    if (log.length === 0) {
+      section.style.display = 'none';
+    } else {
+      section.style.display = 'block';
+      list.innerHTML = '';
+      log.slice().reverse().forEach(e => {
+        const row = document.createElement('div');
+        row.className = 'macro-entry';
+        row.innerHTML = `
+          <div class="macro-entry-label">${esc(e.label || 'Entry')}</div>
+          <div class="macro-entry-macros">
+            <span class="macro-entry-macro"><b>${Math.round(e.calories||0)}</b> kcal</span>
+            <span class="macro-entry-macro"><b>${Math.round(e.protein||0)}</b>g pro</span>
+            <span class="macro-entry-macro"><b>${Math.round(e.carbs||0)}</b>g carb</span>
+            <span class="macro-entry-macro"><b>${Math.round(e.fat||0)}</b>g fat</span>
+          </div>
+          <button class="macro-entry-edit" data-ma="edit" data-id="${e.id}" aria-label="Edit">✎</button>
+          <button class="macro-entry-del"  data-ma="del"  data-id="${e.id}" aria-label="Delete">×</button>`;
+        list.appendChild(row);
+      });
+    }
+  }
+
+  // ── Goals panel ─────────────────────────────────────────────
+  const settingsBtn = document.getElementById('macroSettingsBtn');
+  const goalsPanel  = document.getElementById('macroGoalsPanel');
+
+  function openGoals() {
+    const g = getGoals();
+    document.getElementById('goalCalories').value = g.calories;
+    document.getElementById('goalProtein').value  = g.protein;
+    document.getElementById('goalCarbs').value    = g.carbs;
+    document.getElementById('goalFat').value      = g.fat;
+    goalsPanel.classList.add('open');
+    settingsBtn.classList.add('is-open');
+  }
+  function closeGoals() {
+    goalsPanel.classList.remove('open');
+    settingsBtn.classList.remove('is-open');
+  }
+  settingsBtn.addEventListener('click', () =>
+    goalsPanel.classList.contains('open') ? closeGoals() : openGoals());
+
+  document.getElementById('macroSaveGoalsBtn').addEventListener('click', () => {
+    setGoals({
+      calories: Math.max(0, Number(document.getElementById('goalCalories').value) || 2000),
+      protein:  Math.max(0, Number(document.getElementById('goalProtein').value)  || 150),
+      carbs:    Math.max(0, Number(document.getElementById('goalCarbs').value)    || 200),
+      fat:      Math.max(0, Number(document.getElementById('goalFat').value)      || 65),
+    });
+    closeGoals();
+    renderMacros();
+  });
+
+  // ── Log form ────────────────────────────────────────────────
+  document.getElementById('macroLogBtn').addEventListener('click', () => {
+    const label = document.getElementById('macroLogLabel').value.trim();
+    const cal   = Number(document.getElementById('macroLogCal').value)  || 0;
+    const pro   = Number(document.getElementById('macroLogPro').value)  || 0;
+    const carb  = Number(document.getElementById('macroLogCarb').value) || 0;
+    const fat   = Number(document.getElementById('macroLogFat').value)  || 0;
+    if (!label && cal === 0 && pro === 0 && carb === 0 && fat === 0) return;
+
+    const log = getLog();
+    log.push({
+      id: 'me_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+      label: label || 'Entry',
+      calories: cal, protein: pro, carbs: carb, fat: fat,
+      time: Date.now(),
+    });
+    setLog(log);
+    ['macroLogLabel','macroLogCal','macroLogPro','macroLogCarb','macroLogFat']
+      .forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('macroLogLabel').focus();
+    renderMacros();
+  });
+
+  ['macroLogLabel','macroLogCal','macroLogPro','macroLogCarb','macroLogFat'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('macroLogBtn').click();
+    });
+  });
+
+  // ── Entry actions (edit / delete) ───────────────────────────
+  document.getElementById('macroEntriesList').addEventListener('click', e => {
+    const btn = e.target.closest('[data-ma]');
+    if (!btn) return;
+    const id = btn.dataset.id;
+
+    if (btn.dataset.ma === 'del') {
+      setLog(getLog().filter(x => x.id !== id));
+      renderMacros();
+    } else if (btn.dataset.ma === 'edit') {
+      const entry = getLog().find(x => x.id === id);
+      if (!entry) return;
+      document.getElementById('macroLogLabel').value = entry.label || '';
+      document.getElementById('macroLogCal').value   = entry.calories || '';
+      document.getElementById('macroLogPro').value   = entry.protein  || '';
+      document.getElementById('macroLogCarb').value  = entry.carbs    || '';
+      document.getElementById('macroLogFat').value   = entry.fat      || '';
+      setLog(getLog().filter(x => x.id !== id));
+      renderMacros();
+      document.getElementById('macroLogLabel').focus();
+      document.getElementById('macroLogLabel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+
+  // Refresh on cross-tab / sync storage events
+  window.addEventListener('storage', renderMacros);
+
+  renderMacros();
+
+  // Re-check at midnight rollover (same 1-min interval pattern as stack)
+  setInterval(renderMacros, 60 * 1000);
+})();
+</script>
+<script>
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof initCloudSync !== 'function') return;
   initCloudSync({
     appKey: 'health',
-    syncedKeys: ['stack:items', 'stack:version', 'stack:low', 'po_water_v1'],
-    syncedPrefixes: ['stack:taken:'],
+    syncedKeys: ['stack:items', 'stack:version', 'stack:low', 'po_water_v1', 'macro:goals'],
+    syncedPrefixes: ['stack:taken:', 'macro:log:'],
     onApplied: function () { window.dispatchEvent(new Event('storage')); }
   });
 });

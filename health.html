@@ -633,6 +633,71 @@ main {
   background: rgba(239,68,68,0.08); opacity: 1;
 }
 
+/* Meal selector */
+.macro-meal-select {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 6px; margin: 10px 0 4px;
+}
+.macro-meal-btn {
+  font-size: 11px; font-weight: 700; padding: 8px 4px 9px;
+  border-radius: 10px; border: 1px solid var(--border-strong);
+  background: var(--bg-secondary); color: var(--text-tertiary);
+  cursor: pointer; font-family: var(--font-mono); letter-spacing: 0.03em;
+  text-transform: uppercase; text-align: center; line-height: 1.2;
+  transition: all 0.15s; min-height: 46px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+}
+.macro-meal-btn:hover { border-color: rgba(255,255,255,0.22); color: var(--text-secondary); }
+.macro-meal-btn.active {
+  background: rgba(255,255,255,0.05);
+  border-color: var(--meal-color, rgba(255,255,255,0.3));
+  color: var(--meal-color, var(--text-primary));
+  box-shadow: 0 0 0 1px var(--meal-color, transparent) inset,
+              0 0 10px -4px var(--meal-color, transparent);
+}
+.macro-meal-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor; flex-shrink: 0;
+}
+
+/* Stacked bar overflow */
+.macro-bar-track.is-over {
+  box-shadow: 0 0 0 1px rgba(255,107,107,0.4);
+  background: rgba(239,68,68,0.06);
+}
+
+/* Bar legend */
+.macro-bar-legend {
+  display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 12px; padding-top: 10px;
+  border-top: 1px solid var(--border-soft);
+}
+.macro-bar-legend-item {
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary);
+}
+.macro-bar-legend-dot {
+  width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0;
+}
+
+/* Entries grouped by meal */
+.macro-entries-group { margin-bottom: 12px; }
+.macro-entries-group:last-child { margin-bottom: 0; }
+.macro-entries-group-head {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  margin-bottom: 6px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.macro-entries-group-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+}
+.macro-entries-group-total {
+  margin-left: auto; font-size: 10px; color: var(--text-quaternary);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+
 @media (max-width: 600px) {
   .macro-section { margin-top: 40px; }
   .macro-log-inputs { grid-template-columns: 1fr 1fr; }
@@ -740,6 +805,20 @@ main {
 
       <div class="macro-log-section">
         <div class="sf-eyebrow">Log a meal</div>
+        <div class="macro-meal-select" id="macroMealSelect">
+          <button class="macro-meal-btn" data-meal="breakfast" style="--meal-color:#F5D24A">
+            <span class="macro-meal-dot"></span>Breakfast
+          </button>
+          <button class="macro-meal-btn" data-meal="lunch" style="--meal-color:#4A9EFF">
+            <span class="macro-meal-dot"></span>Lunch
+          </button>
+          <button class="macro-meal-btn" data-meal="dinner" style="--meal-color:#FF7043">
+            <span class="macro-meal-dot"></span>Dinner
+          </button>
+          <button class="macro-meal-btn" data-meal="snacks" style="--meal-color:#A855F7">
+            <span class="macro-meal-dot"></span>Snacks
+          </button>
+        </div>
         <div class="macro-log-inputs">
           <input type="text"   id="macroLogLabel" class="stack-input" placeholder="Meal / food name" autocomplete="off" />
           <input type="number" id="macroLogCal"   class="stack-input" placeholder="kcal"   min="0" />
@@ -1304,6 +1383,13 @@ main {
     { key: 'fat',      label: 'Fat',      unit: 'g',    color: '#34D399', short: 'Fat',  tol: 10,  def: 65   },
   ];
 
+  const MEALS = [
+    { key: 'breakfast', label: 'Breakfast', color: '#F5D24A' },
+    { key: 'lunch',     label: 'Lunch',     color: '#4A9EFF' },
+    { key: 'dinner',    label: 'Dinner',    color: '#FF7043' },
+    { key: 'snacks',    label: 'Snacks',    color: '#A855F7' },
+  ];
+
   const GOALS_KEY = 'macro:goals';
   const logKey = () => `macro:log:${macroDate()}`;
 
@@ -1320,8 +1406,8 @@ main {
   const getLog   = ()    => mGet(logKey()) || [];
   const setLog   = (arr) => mSet(logKey(), arr);
 
-  function getTotals(log) {
-    return log.reduce((acc, e) => ({
+  function getTotals(entries) {
+    return entries.reduce((acc, e) => ({
       calories: acc.calories + (Number(e.calories) || 0),
       protein:  acc.protein  + (Number(e.protein)  || 0),
       carbs:    acc.carbs    + (Number(e.carbs)     || 0),
@@ -1330,9 +1416,20 @@ main {
   }
 
   function barColor(current, goal, tol, macroColor) {
-    if (current > goal + tol)       return '#FF6B6B';  // over → red
-    if (Math.abs(current - goal) <= tol) return '#1D9E75'; // at goal → green
-    return macroColor;                                  // under → macro color
+    if (current > goal + tol)            return '#FF6B6B';
+    if (Math.abs(current - goal) <= tol) return '#1D9E75';
+    return macroColor;
+  }
+
+  // Infer meal from time for legacy entries without a meal field
+  function inferMeal(entry) {
+    if (entry.meal) return entry.meal;
+    if (!entry.time) return 'snacks';
+    const h = new Date(entry.time).getHours();
+    if (h < 10) return 'breakfast';
+    if (h < 14) return 'lunch';
+    if (h < 18) return 'snacks';
+    return 'dinner';
   }
 
   function esc(str) {
@@ -1340,12 +1437,30 @@ main {
       ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
   }
 
+  // ── Meal selector state ───────────────────────────────────────
+  function autoDetectMeal() {
+    const h = new Date().getHours();
+    if (h < 10) return 'breakfast';
+    if (h < 14) return 'lunch';
+    if (h < 18) return 'snacks';
+    return 'dinner';
+  }
+
+  let activeMeal = autoDetectMeal();
+
+  function setActiveMeal(meal) {
+    activeMeal = meal;
+    document.querySelectorAll('.macro-meal-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.meal === meal);
+    });
+  }
+
   function renderMacros() {
     const goals  = getGoals();
     const log    = getLog();
     const totals = getTotals(log);
 
-    // ── Stat cards ──────────────────────────────────────────
+    // ── Stat cards ───────────────────────────────────────────────
     const grid = document.getElementById('macroGrid');
     grid.innerHTML = '';
     MACROS.forEach(m => {
@@ -1374,26 +1489,51 @@ main {
       grid.appendChild(card);
     });
 
-    // ── Bar chart ────────────────────────────────────────────
+    // ── Stacked bar chart (segmented by meal) ────────────────────
     const barsEl = document.getElementById('macroBars');
     barsEl.innerHTML = '';
     MACROS.forEach(m => {
-      const cur   = totals[m.key];
-      const goal  = goals[m.key];
-      const pct   = goal > 0 ? Math.min((cur / goal) * 100, 100) : 0;
-      const color = barColor(cur, goal, m.tol, m.color);
-      const row   = document.createElement('div');
+      const cur    = totals[m.key];
+      const goal   = goals[m.key];
+      const isOver = cur > goal + m.tol;
+
+      let cumPct = 0;
+      const segments = [];
+      MEALS.forEach(ml => {
+        const mealAmt = log
+          .filter(e => inferMeal(e) === ml.key)
+          .reduce((s, e) => s + (Number(e[m.key]) || 0), 0);
+        if (mealAmt <= 0) return;
+        const rawPct = goal > 0 ? (mealAmt / goal) * 100 : 0;
+        const left  = Math.min(cumPct, 100);
+        const width = Math.max(0, Math.min(rawPct, 100 - left));
+        cumPct += rawPct;
+        if (width > 0) segments.push({ color: ml.color, left, width });
+      });
+
+      const segHtml = segments.map(s =>
+        `<div class="macro-bar-fill" style="left:${s.left.toFixed(2)}%;width:${s.width.toFixed(2)}%;background:${s.color}"></div>`
+      ).join('');
+
+      const row = document.createElement('div');
       row.className = 'macro-bar-row';
       row.innerHTML = `
         <div class="macro-bar-name" style="color:${m.color}">${esc(m.short)}</div>
-        <div class="macro-bar-track">
-          <div class="macro-bar-fill" style="width:${pct}%;background:${color}"></div>
-        </div>
+        <div class="macro-bar-track${isOver ? ' is-over' : ''}">${segHtml}</div>
         <div class="macro-bar-val">${Math.round(cur)} / ${goal}</div>`;
       barsEl.appendChild(row);
     });
 
-    // ── Entries list ─────────────────────────────────────────
+    // Meal color legend
+    const legendHtml = MEALS.map(ml => `
+      <div class="macro-bar-legend-item">
+        <div class="macro-bar-legend-dot" style="background:${ml.color}"></div>
+        ${esc(ml.label)}
+      </div>`).join('');
+    barsEl.insertAdjacentHTML('beforeend',
+      `<div class="macro-bar-legend">${legendHtml}</div>`);
+
+    // ── Entries grouped by meal ───────────────────────────────────
     const section = document.getElementById('macroEntriesSection');
     const list    = document.getElementById('macroEntriesList');
     if (log.length === 0) {
@@ -1401,25 +1541,43 @@ main {
     } else {
       section.style.display = 'block';
       list.innerHTML = '';
-      log.slice().reverse().forEach(e => {
-        const row = document.createElement('div');
-        row.className = 'macro-entry';
-        row.innerHTML = `
-          <div class="macro-entry-label">${esc(e.label || 'Entry')}</div>
-          <div class="macro-entry-macros">
-            <span class="macro-entry-macro"><b>${Math.round(e.calories||0)}</b> kcal</span>
-            <span class="macro-entry-macro"><b>${Math.round(e.protein||0)}</b>g pro</span>
-            <span class="macro-entry-macro"><b>${Math.round(e.carbs||0)}</b>g carb</span>
-            <span class="macro-entry-macro"><b>${Math.round(e.fat||0)}</b>g fat</span>
-          </div>
-          <button class="macro-entry-edit" data-ma="edit" data-id="${e.id}" aria-label="Edit">✎</button>
-          <button class="macro-entry-del"  data-ma="del"  data-id="${e.id}" aria-label="Delete">×</button>`;
-        list.appendChild(row);
+
+      MEALS.forEach(ml => {
+        const mealEntries = log.filter(e => inferMeal(e) === ml.key);
+        if (mealEntries.length === 0) return;
+
+        const mealTotals = getTotals(mealEntries);
+        const group = document.createElement('div');
+        group.className = 'macro-entries-group';
+        group.innerHTML = `
+          <div class="macro-entries-group-head">
+            <div class="macro-entries-group-dot" style="background:${ml.color}"></div>
+            <span style="color:${ml.color}">${esc(ml.label)}</span>
+            <span class="macro-entries-group-total">${Math.round(mealTotals.calories)} kcal · ${Math.round(mealTotals.protein)}g pro</span>
+          </div>`;
+
+        mealEntries.slice().reverse().forEach(e => {
+          const entryEl = document.createElement('div');
+          entryEl.className = 'macro-entry';
+          entryEl.innerHTML = `
+            <div class="macro-entry-label">${esc(e.label || 'Entry')}</div>
+            <div class="macro-entry-macros">
+              <span class="macro-entry-macro"><b>${Math.round(e.calories||0)}</b> kcal</span>
+              <span class="macro-entry-macro"><b>${Math.round(e.protein||0)}</b>g pro</span>
+              <span class="macro-entry-macro"><b>${Math.round(e.carbs||0)}</b>g carb</span>
+              <span class="macro-entry-macro"><b>${Math.round(e.fat||0)}</b>g fat</span>
+            </div>
+            <button class="macro-entry-edit" data-ma="edit" data-id="${e.id}" aria-label="Edit">✎</button>
+            <button class="macro-entry-del"  data-ma="del"  data-id="${e.id}" aria-label="Delete">×</button>`;
+          group.appendChild(entryEl);
+        });
+
+        list.appendChild(group);
       });
     }
   }
 
-  // ── Goals panel ─────────────────────────────────────────────
+  // ── Goals panel ──────────────────────────────────────────────
   const settingsBtn = document.getElementById('macroSettingsBtn');
   const goalsPanel  = document.getElementById('macroGoalsPanel');
 
@@ -1450,7 +1608,14 @@ main {
     renderMacros();
   });
 
-  // ── Log form ────────────────────────────────────────────────
+  // ── Meal selector ─────────────────────────────────────────────
+  document.getElementById('macroMealSelect').addEventListener('click', e => {
+    const btn = e.target.closest('.macro-meal-btn');
+    if (!btn) return;
+    setActiveMeal(btn.dataset.meal);
+  });
+
+  // ── Log form ──────────────────────────────────────────────────
   document.getElementById('macroLogBtn').addEventListener('click', () => {
     const label = document.getElementById('macroLogLabel').value.trim();
     const cal   = Number(document.getElementById('macroLogCal').value)  || 0;
@@ -1461,10 +1626,11 @@ main {
 
     const log = getLog();
     log.push({
-      id: 'me_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-      label: label || 'Entry',
+      id:       'me_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+      label:    label || 'Entry',
+      meal:     activeMeal,
       calories: cal, protein: pro, carbs: carb, fat: fat,
-      time: Date.now(),
+      time:     Date.now(),
     });
     setLog(log);
     ['macroLogLabel','macroLogCal','macroLogPro','macroLogCarb','macroLogFat']
@@ -1479,7 +1645,7 @@ main {
     });
   });
 
-  // ── Entry actions (edit / delete) ───────────────────────────
+  // ── Entry actions (edit / delete) ─────────────────────────────
   document.getElementById('macroEntriesList').addEventListener('click', e => {
     const btn = e.target.closest('[data-ma]');
     if (!btn) return;
@@ -1491,24 +1657,25 @@ main {
     } else if (btn.dataset.ma === 'edit') {
       const entry = getLog().find(x => x.id === id);
       if (!entry) return;
-      document.getElementById('macroLogLabel').value = entry.label || '';
+      document.getElementById('macroLogLabel').value = entry.label    || '';
       document.getElementById('macroLogCal').value   = entry.calories || '';
       document.getElementById('macroLogPro').value   = entry.protein  || '';
       document.getElementById('macroLogCarb').value  = entry.carbs    || '';
       document.getElementById('macroLogFat').value   = entry.fat      || '';
       setLog(getLog().filter(x => x.id !== id));
+      setActiveMeal(inferMeal(entry));
       renderMacros();
       document.getElementById('macroLogLabel').focus();
       document.getElementById('macroLogLabel').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   });
 
-  // Refresh on cross-tab / sync storage events
   window.addEventListener('storage', renderMacros);
 
+  // Initialize meal selector to auto-detected meal
+  setActiveMeal(activeMeal);
   renderMacros();
 
-  // Re-check at midnight rollover (same 1-min interval pattern as stack)
   setInterval(renderMacros, 60 * 1000);
 })();
 </script>

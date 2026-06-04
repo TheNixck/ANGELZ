@@ -531,6 +531,11 @@ main {
 .macro-stat.is-over {
   border-color: rgba(239,68,68,0.35); background: rgba(239,68,68,0.04);
 }
+.macro-stat.is-done {
+  border-color: rgba(29,158,117,0.5);
+  background: rgba(29,158,117,0.07);
+  box-shadow: 0 0 0 1px rgba(29,158,117,0.12) inset;
+}
 .macro-stat-label {
   font-family: var(--font-mono); font-size: 10px; font-weight: 700;
   letter-spacing: 0.14em; text-transform: uppercase;
@@ -558,6 +563,12 @@ main {
   font-size: 8px; font-family: var(--font-mono); font-weight: 700;
   letter-spacing: 0.06em; text-transform: uppercase; color: #FF6B6B;
   background: rgba(239,68,68,0.10); border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 6px; padding: 2px 5px; white-space: nowrap;
+}
+.macro-done-badge {
+  font-size: 8px; font-family: var(--font-mono); font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase; color: #1D9E75;
+  background: rgba(29,158,117,0.12); border: 1px solid rgba(29,158,117,0.3);
   border-radius: 6px; padding: 2px 5px; white-space: nowrap;
 }
 
@@ -1468,15 +1479,16 @@ main {
       const goal   = goals[m.key];
       const pct    = goal > 0 ? Math.min((cur / goal) * 100, 100) : 0;
       const isOver = cur > goal + m.tol;
+      const isDone = !isOver && cur > 0 && cur >= goal - m.tol;
       const color  = barColor(cur, goal, m.tol, m.color);
       const excess = isOver ? `+${Math.round(cur - goal)}` : '';
 
       const card = document.createElement('div');
-      card.className = 'macro-stat' + (isOver ? ' is-over' : '');
+      card.className = 'macro-stat' + (isOver ? ' is-over' : isDone ? ' is-done' : '');
       card.innerHTML = `
         <div class="macro-stat-label" style="color:${m.color}">
           ${esc(m.label)}
-          ${isOver ? `<span class="macro-over-badge">${esc(excess)}</span>` : ''}
+          ${isOver ? `<span class="macro-over-badge">${esc(excess)}</span>` : isDone ? `<span class="macro-done-badge">✓ Goal</span>` : ''}
         </div>
         <div style="display:flex;align-items:baseline;gap:2px;margin-bottom:3px">
           <span class="macro-stat-num">${Math.round(cur)}</span>
